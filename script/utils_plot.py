@@ -52,13 +52,18 @@ class FSM_visualizer:
                     'GO2_SEARCH': (0.5, 3), 'GO2_CORN': (0, 4), 'INSERT': (1, 4), 'RETURN2_CORN': (1, 3),
                     'RETURN2_PLANE': (1, 2), 'DONE': (1, 1)}
 
+        if self.fig is None or self.ax is None:
+            self.fig, self.ax = plt.subplots(figsize=(10, 6))  # Adjust the figure size according to your preference
+
+        plt.axis('off')
+        plt.ion() #non-blocking
+        plt.show()
+
     def highlight_all_nodes(self):
         '''
         Sequence through all nodes in the graph and highlight them
         '''
-        if self.fig is None or self.ax is None:
-            self.fig, self.ax = plt.subplots(figsize=(10, 6))  # Adjust the figure size according to your preference
-
+        
         def update_colors_labels(frame):
             colors = []
             labels = {}
@@ -75,15 +80,14 @@ class FSM_visualizer:
         frames = list(self.G.nodes)
         ani = animation.FuncAnimation(self.fig, update_colors_labels, frames=frames, repeat=False)
 
-        plt.axis('off')
-        plt.show()
+        plt.draw()
+        plt.pause(1)
+        
 
     def highlight_only_input_node(self, node):
         '''
         Highlight only the input node
         '''
-        if self.fig is None or self.ax is None:
-            self.fig, self.ax = plt.subplots(figsize=(10, 6))  # Adjust the figure size according to your preference
 
         def update_colors_labels(frame):
             colors = []
@@ -100,12 +104,13 @@ class FSM_visualizer:
 
         ani = animation.FuncAnimation(self.fig, update_colors_labels, frames=[0], repeat=False)
 
-        plt.axis('off')
-        plt.show()
+        plt.draw()
+        plt.pause(1)
+        
 
 # testing for plot code
 if __name__ == "__main__":
-    print(" ================ starting script ============ ")
+    print(" ================ starting plot script ============ ")
 
     #for animation
     matplotlib.use('TkAgg')
@@ -113,9 +118,15 @@ if __name__ == "__main__":
     fsm = FSM_visualizer()
     fsm.create_graph()
 
+    #all nodes
     # fsm.highlight_all_nodes()
+
+    #individual nodes
     fsm.highlight_only_input_node('GO2_CAM_POSE')
+    time.sleep(3)
+    fsm.highlight_only_input_node('STOW')
+    time.sleep(3)
 
     
 
-    print(" ================ ending script ============ ")
+    print(" ================ ending plot script ============ ")

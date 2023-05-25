@@ -45,7 +45,7 @@ def get_args_parser():
     return parser
 
 if __name__ == "__main__":
-    print(" ================ start ============ ")
+    print(" ================ start main script ============ ")
     parser = argparse.ArgumentParser('xArm_motion', parents=[get_args_parser()])
     args = parser.parse_args()
 
@@ -56,4 +56,4 @@ if __name__ == "__main__":
     fsm_instance.run_fsm()
 
 
-    print(" ================ completed script ============ ")
+    print(" ================ completed main script ============ ")

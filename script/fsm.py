@@ -15,6 +15,7 @@ import smach_ros
 
 #custom helper library
 import xArm_Motion as xArm_Motion
+import utils_plot as fsm_plot
 
 """ 
 #######################################################
@@ -32,50 +33,59 @@ import xArm_Motion as xArm_Motion
 #create xArm Motion instance
 xArm_instance = xArm_Motion.xArm_Motion('192.168.1.213')
 
+#create visualizer
+plotter = fsm_plot.FSM_visualizer()
+plotter.create_graph()
 
-# define state STOW_POSE
-class STOW_POSE(smach.State):
-    global xArm_instance
+# define state STOW
+class STOW(smach.State):
+    global xArm_instance, plotter
 
     def __init__(self):
         smach.State.__init__(self, outcomes=['outcome1','outcome2'])
         self.counter = 0
 
     def execute(self, userdata):
-        rospy.loginfo('Executing state STOW_POSE')
+        rospy.loginfo('Executing state STOW')
         if self.counter < 1:
             self.counter += 1
-            time.sleep(1)
+            plotter.highlight_only_input_node('STOW')
+            xArm_instance.go_to_home()
+
+
+            time.sleep(3)
             return 'outcome1'
         else:
             # go to home position
-            xArm_instance.go_to_home()
             return 'outcome2'
 
 
 # define state GO2PLANE
-class GO2PLANE(smach.State):
-    global xArm_instance
+class GO2_PLANE(smach.State):
+    global xArm_instance, plotter
 
     def __init__(self):
         smach.State.__init__(self, outcomes=['outcome1','outcome2'])
         self.counter = 0
 
     def execute(self, userdata):
-        rospy.loginfo('Executing state GO2PLANE')
+        rospy.loginfo('Executing state GO2_PLANE')
 
         if self.counter < 1:
             self.counter += 1
-            time.sleep(1)
+            plotter.highlight_only_input_node('GO2_PLANE')
+            xArm_instance.go_to_plane()
+
+            time.sleep(3)
             return 'outcome1'
         else:
             # go to home position
-            xArm_instance.go_to_plane()
+            
             return 'outcome2'
         
 # define state DONE
 class DONE(smach.State):
-    global xArm_instance
+    global xArm_instance, plotter
 
     def __init__(self):
         smach.State.__init__(self, outcomes=['outcome4'])
@@ -83,7 +93,7 @@ class DONE(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo('Executing state DONE')
-
+        plotter.highlight_only_input_node('DONE')
         return 'outcome4'
         
 
@@ -98,16 +108,29 @@ class FSM():
         # Create a SMACH state machine
         self.sm = smach.StateMachine(outcomes=['outcome4'])
 
+        
+
         # Open the container
         with self.sm:
             # Add states to the container
-            smach.StateMachine.add('STOW_POSE', STOW_POSE(), 
-                                transitions={'outcome1':'STOW_POSE', 'outcome2':'GO2PLANE'})
-            smach.StateMachine.add('GO2PLANE', GO2PLANE(), 
-                                transitions={'outcome1':'GO2PLANE', 'outcome2':'DONE'})
+            smach.StateMachine.add('STOW', STOW(), 
+                                transitions={'outcome1':'STOW', 'outcome2':'GO2_PLANE'})
+            smach.StateMachine.add('GO2_PLANE', GO2_PLANE(), 
+                                transitions={'outcome1':'GO2_PLANE', 'outcome2':'DONE'})
             smach.StateMachine.add('DONE', DONE(), 
                                 transitions={'outcome4':'outcome4'})
 
+
+        # self.G.add_edge('STOW', 'GO2PLANE')
+        # self.G.add_edge('GO2PLANE','GO2_CAM_POSE')
+        # self.G.add_edge('GO2_CAM_POSE', 'REQ_DETECT')
+        # self.G.add_edge('REQ_DETECT', 'GO2PLANE')
+        # self.G.add_edge('REQ_DETECT', 'GO2_SEARCH')
+        # self.G.add_edge('GO2PLANE', 'GO2_CORN')
+        # self.G.add_edge('GO2_CORN', 'INSERT')
+        # self.G.add_edge('INSERT', 'RETURN2_CORN')
+        # self.G.add_edge('RETURN2_CORN', 'RETURN2_PLANE')
+        # self.G.add_edge('RETURN2_PLANE', 'DONE')
 
 
 
