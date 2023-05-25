@@ -52,7 +52,7 @@ if __name__ == "__main__":
         time.sleep(1)
 
     # perform series of motion for conrn insertion
-    xArm_corn.simple_blind_insert_motions_rightside()
+    xArm_corn.simple_blind_insert_motions()
 
 
     print(" ================ completed script ============ ")

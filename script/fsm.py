@@ -104,7 +104,7 @@ class FSM():
             smach.StateMachine.add('STOW_POSE', STOW_POSE(), 
                                 transitions={'outcome1':'STOW_POSE', 'outcome2':'GO2PLANE'})
             smach.StateMachine.add('GO2PLANE', GO2PLANE(), 
-                                transitions={'outcome1':'STOW_POSE', 'outcome2':'DONE'})
+                                transitions={'outcome1':'GO2PLANE', 'outcome2':'DONE'})
             smach.StateMachine.add('DONE', DONE(), 
                                 transitions={'outcome4':'outcome4'})
 

@@ -36,50 +36,50 @@ class xArm_Motion():
 
     def go_to_home(self):
         print(" ---- going to home position ----")
-        self.arm.move_gohome()
+        # self.arm.move_gohome()
 
     def go_to_plane(self):
         print(" ---- going to plane joint position ----")
-        self.arm.set_servo_angle(angle=[0, -28.2, -98.5, 0, 126.6, 0], is_radian=False, wait=True)
+        # self.arm.set_servo_angle(angle=[0, -28.2, -98.5, 0, 126.6, 0], is_radian=False, wait=True)
 
     def go_to_rotated_plane(self):
         print(f" ---- rotating EE 90 deg  ----")
-        self.arm.set_position_aa(axis_angle_pose=[0, 0, 0, -90, 0, 0], relative=True, wait=True)
+        # self.arm.set_position_aa(axis_angle_pose=[0, 0, 0, -90, 0, 0], relative=True, wait=True)
 
     def go_to_rotated_plane_right(self):
         print(f" ---- rotating EE 90 deg  ----")
-        self.arm.set_position_aa(axis_angle_pose=[0, 0, 0, 90, 0, 0], relative=True, wait=True)
+        # self.arm.set_position_aa(axis_angle_pose=[0, 0, 0, 90, 0, 0], relative=True, wait=True)
 
 
     def go_to_rotate_joint6(self, deg):
         print(f" ---- rotate joint 6 ----")
-        self.arm.set_servo_angle(angle=[0,0,0,0,0, deg], relative=True, is_radian=False, wait=True)
+        # self.arm.set_servo_angle(angle=[0,0,0,0,0, deg], relative=True, is_radian=False, wait=True)
 
 
     def go_to_approach_corn_left(self):
         print(f" ---- go to corn approach ----")
-        self.arm.set_position_aa(axis_angle_pose=[0, -230, 0, 0, 0, 0], relative=True, wait=True)
+        # self.arm.set_position_aa(axis_angle_pose=[0, -230, 0, 0, 0, 0], relative=True, wait=True)
     
     def go_to_approach_corn(self, y_mm):
         print(f" ---- go to corn approach ----")
-        self.arm.set_position_aa(axis_angle_pose=[0, y_mm, 0, 0, 0, 0], relative=True, wait=True)
+        # self.arm.set_position_aa(axis_angle_pose=[0, y_mm, 0, 0, 0, 0], relative=True, wait=True)
     
 
     def go_to_inside_corn_left(self):
         print(f" ---- inside to corn approach ----")
-        self.arm.set_position_aa(axis_angle_pose=[-80, 0, 0, 0, 0, 0], relative=True, wait=True)    
+        # self.arm.set_position_aa(axis_angle_pose=[-80, 0, 0, 0, 0, 0], relative=True, wait=True)    
 
     def go_to_outside_corn_left(self):
         print(f" ---- outside to corn approach ----")
-        self.arm.set_position_aa(axis_angle_pose=[80, 0, 0, 0, 0, 0], relative=True, wait=True)    
+        # self.arm.set_position_aa(axis_angle_pose=[80, 0, 0, 0, 0, 0], relative=True, wait=True)    
 
     def go_to_plane_back(self):
         print(f" ---- go to plane position back ----")
-        self.arm.set_position_aa(axis_angle_pose=[0, 230, 0, 0, 0, 0], relative=True, wait=True)
+        # self.arm.set_position_aa(axis_angle_pose=[0, 230, 0, 0, 0, 0], relative=True, wait=True)
 
     def go_to_rotate_joint6_back(self):
         print(f" ---- rotate joint 6 back ----")
-        self.arm.set_servo_angle(angle=[0,0,0,0,0, -90], relative=True, is_radian=False, wait=True)
+        # self.arm.set_servo_angle(angle=[0,0,0,0,0, -90], relative=True, is_radian=False, wait=True)
  
 
 
