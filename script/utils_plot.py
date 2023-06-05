@@ -119,13 +119,13 @@ if __name__ == "__main__":
     fsm.create_graph()
 
     #all nodes
-    # fsm.highlight_all_nodes()
+    fsm.highlight_all_nodes()
 
     #individual nodes
-    fsm.highlight_only_input_node('GO2_CAM_POSE')
-    time.sleep(3)
-    fsm.highlight_only_input_node('STOW')
-    time.sleep(3)
+    # fsm.highlight_only_input_node('GO2_CAM_POSE')
+    # time.sleep(3)
+    # fsm.highlight_only_input_node('STOW')
+    # time.sleep(3)
 
     
 

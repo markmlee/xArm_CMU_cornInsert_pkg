@@ -8,6 +8,10 @@ import time
 #API
 from xarm.wrapper import XArmAPI
 
+#custom helper library
+import ChAruco_detect as ChAruco_detect
+import cv2
+
 """ 
 #######################################################
 # Helper class for xArm interface with SDK 
@@ -26,6 +30,10 @@ class xArm_Motion():
         # self.stuff = 0
         self.ip = ip_addr
 
+        # create ChAruco_detect class
+        self.ChAruco_detector = ChAruco_detect.ChAruco()
+        
+
     def initialize_robot(self):
         print(" ---- initializing robot ----")
         self.arm = XArmAPI(self.ip)
@@ -36,11 +44,33 @@ class xArm_Motion():
 
     def go_to_home(self):
         print(" ---- going to home position ----")
-        # self.arm.move_gohome()
+        self.arm.move_gohome(wait=True)
 
     def go_to_plane(self):
         print(" ---- going to plane joint position ----")
-        # self.arm.set_servo_angle(angle=[0, -28.2, -98.5, 0, 126.6, 0], is_radian=False, wait=True)
+        self.arm.set_servo_angle(angle=[0, -44.9, -62.5, 0, 107.3, 0], is_radian=False, wait=True)
+
+    def go_to_rotated_plane_cam(self):
+        print(f" ---- rotating EE -90 deg Y  ----")
+        self.arm.set_position_aa(axis_angle_pose=[0, 0, 0, 0, -90, 0], relative=True, wait=True)
+
+    def get_stalk_pose(self):
+        print(f" ---- getting stalk pose ----")
+
+        # get pose
+        gotpose, rvec, tvec = self.ChAruco_detector.get_offset(debug=True)
+        return gotpose, rvec, tvec
+
+    def go_to_stalk_pose(self):
+
+        print(f"tvec received in motion: ")
+        print(f" ---- going to stalk pose ----")
+        self.arm.set_position_aa(axis_angle_pose=[-0.166*1000*0.8, -0.166*1000*0.8, 0.316*1000*0.8, 0, 0, 0], relative=True, wait=True)
+        time.sleep(3)
+        print(f" ---- returning from  stalk pose ----")
+        self.arm.set_position_aa(axis_angle_pose=[0.166*1000*0.8, 0.166*1000*0.8, -0.316*1000*0.8, 0, 0, 0], relative=True, wait=True)
+
+
 
     def go_to_rotated_plane(self):
         print(f" ---- rotating EE 90 deg  ----")
@@ -53,7 +83,7 @@ class xArm_Motion():
 
     def go_to_rotate_joint6(self, deg):
         print(f" ---- rotate joint 6 ----")
-        # self.arm.set_servo_angle(angle=[0,0,0,0,0, deg], relative=True, is_radian=False, wait=True)
+        self.arm.set_servo_angle(angle=[0,0,0,0,0, deg], relative=True, is_radian=False, wait=True)
 
 
     def go_to_approach_corn_left(self):
