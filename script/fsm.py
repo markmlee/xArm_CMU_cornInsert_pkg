@@ -109,6 +109,29 @@ class GO2_CAM_POSE(smach.State):
             #  transition to next state
             
             return 'outcome2'
+        
+# define state DEPLOY_BOX
+class DEPLOY_BOX(smach.State):
+    global xArm_instance, plotter
+
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['outcome1','outcome2'])
+        self.counter = 0
+
+    def execute(self, userdata):
+        rospy.loginfo('Executing state DEPLOY_BOX')
+
+        if self.counter < 1:
+            self.counter += 1
+            plotter.highlight_only_input_node('DEPLOY_BOX')
+            
+
+            time.sleep(1)
+            return 'outcome1'
+        else:
+            #  transition to next state
+            
+            return 'outcome2'
 
 # define state GO2_CAM_POSE
 class REQ_DETECT(smach.State):
@@ -147,7 +170,7 @@ class GO2_CORN(smach.State):
 
         if self.counter < 1:
             self.counter += 1
-            plotter.highlight_only_input_node('GO2_CORN')
+            plotter.highlight_only_input_node('GO2_CORN') 
             xArm_instance.go_to_stalk_pose()
 
             time.sleep(1)
@@ -197,10 +220,12 @@ class FSM():
 
             smach.StateMachine.add('REQ_DETECT', REQ_DETECT(), 
                                 transitions={'outcome1':'REQ_DETECT', 'outcome2':'GO2_CORN'})
-
+            
             smach.StateMachine.add('GO2_CORN', GO2_CORN(), 
-                                transitions={'outcome1':'GO2_CORN', 'outcome2':'DONE'})
-
+                                transitions={'outcome1':'GO2_CORN', 'outcome2':'DEPLOY_BOX'})
+            
+            smach.StateMachine.add('DEPLOY_BOX', DEPLOY_BOX(),
+                                transitions={'outcome1': 'DEPLOY_BOX', 'outcome2':'WAIT', 'outcome3':'DONE'})
 
             smach.StateMachine.add('DONE', DONE(), 
                                 transitions={'outcome4':'outcome4'})
@@ -215,7 +240,8 @@ class FSM():
         # self.G.add_edge('GO2_CORN', 'INSERT')
         # self.G.add_edge('INSERT', 'RETURN2_CORN')
         # self.G.add_edge('RETURN2_CORN', 'RETURN2_PLANE')
-        # self.G.add_edge('RETURN2_PLANE', 'DONE')
+        # self.G.add_edge('RETURN2_PLANE', 'DEPLOY_BOX')
+        # self.G.add_edge('DEPLOY_BOX', 'DONE')
 
 
 
