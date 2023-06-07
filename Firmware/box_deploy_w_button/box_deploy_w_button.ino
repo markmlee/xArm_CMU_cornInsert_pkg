@@ -1,4 +1,4 @@
-#include <Servo.h>
+  #include <Servo.h>
 
 // Define a structure to encapsulate the details of a "box"
 struct logger {
@@ -7,11 +7,13 @@ struct logger {
 };
 
 const int NUMBER_OF_BOXES = 5;  // Define the total number of boxes
+const int STARTUP_ANGLE = 95;
+const int RELEASE_ANGLE = 120;
 
 logger boxes[NUMBER_OF_BOXES];  // Create an array of boxes
 
 // Array to hold button pin numbers
-int buttonPins[NUMBER_OF_BOXES] = { 2, 3, 4, 5, 6 };
+int buttonPins[NUMBER_OF_BOXES] = { 2, 3, 5, 4, 6 };
 
 // Array to hold servo pin numbers
 int servoPins[NUMBER_OF_BOXES] = { 11, 12, 9, 10, 8 };
@@ -38,7 +40,7 @@ void setup() {
   for (int i = 0; i < NUMBER_OF_BOXES; i++) {
     buttons[i].pin = buttonPins[i];       // assign the button pin from the array
     boxes[i].servo.attach(servoPins[i]);  // attach the servo to the pin from the array
-    boxes[i].servo.write(55);             // move the servo to its initial position
+    boxes[i].servo.write(STARTUP_ANGLE);             // move the servo to its initial position
     pinMode(buttons[i].pin, INPUT);   // set the button's pin mode to INPUT
   }
   Serial.begin(9600);  // begin serial communication
@@ -65,11 +67,11 @@ void loop() {
             if (boxNumber >= 1 && boxNumber <= NUMBER_OF_BOXES) {
               int boxIndex = boxNumber - 1;
               if (command == 'o') {
-                boxes[boxIndex].servo.write(0);
+                boxes[boxIndex].servo.write(RELEASE_ANGLE);
                 boxes[boxIndex].boxState = 1;
                 Serial.println("{\"code\": 200, \"explain\": \"Success: Opened box " + String(boxNumber) + "\"}");
               } else {
-                boxes[boxIndex].servo.write(55);
+                boxes[boxIndex].servo.write(STARTUP_ANGLE);
                 boxes[boxIndex].boxState = -1;
                 Serial.println("{\"code\": 200, \"explain\": \"Success: Closed box " + String(boxNumber) + "\"}");
               }
@@ -106,14 +108,14 @@ void loop() {
         // If the button is pressed and the box is closed...
         if ((buttons[i].state == 1) && (boxes[i].boxState < 0)) {
           Serial.print("{\"code\": 201, \"explain\": \"Success: Manually opened box " + String(i + 1) + "\"}");  // print a message to the serial monitor
-          boxes[i].servo.write(0);      // open the box
+          boxes[i].servo.write(RELEASE_ANGLE);      // open the box
           boxes[i].boxState = 1;        // change the state of the box
           buttons[i].lastDebounceTime = millis();  // update the debounce timer
         }
         // If the button is pressed and the box is open...
         else if ((buttons[i].state == 1) && (boxes[i].boxState > 0)) {
           Serial.print("{\"code\": 201, \"explain\": \"Success: Manually closed box " + String(i + 1) + "\"}");  // print a message to the serial monitor
-          boxes[i].servo.write(55);     // close the box
+          boxes[i].servo.write(STARTUP_ANGLE);     // close the box
           boxes[i].boxState = -1;       // change the state of the box
           buttons[i].lastDebounceTime = millis();  // update the debounce timer
         }

@@ -16,6 +16,7 @@ import smach_ros
 #custom helper library
 import xArm_Motion as xArm_Motion
 import utils_plot as fsm_plot
+import arduino_comms as arduino_comms
 
 """ 
 #######################################################
@@ -39,6 +40,8 @@ xArm_instance.initialize_robot()
 plotter = fsm_plot.FSM_visualizer()
 plotter.create_graph()
 
+#arduino comms
+box_deploy = arduino_comms.arduino_comms()
 
 
 # define state STOW
@@ -124,14 +127,14 @@ class DEPLOY_BOX(smach.State):
         if self.counter < 1:
             self.counter += 1
             plotter.highlight_only_input_node('DEPLOY_BOX')
-            
+            box_deploy.deploy_box(1)
 
             time.sleep(1)
             return 'outcome1'
         else:
             #  transition to next state
             
-            return 'outcome2'
+            return 'outcome3'
 
 # define state GO2_CAM_POSE
 class REQ_DETECT(smach.State):
