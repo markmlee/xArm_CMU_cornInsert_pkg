@@ -13,10 +13,10 @@ const int RELEASE_ANGLE = 120;
 logger boxes[NUMBER_OF_BOXES];  // Create an array of boxes
 
 // Array to hold button pin numbers
-int buttonPins[NUMBER_OF_BOXES] = { 2, 3, 5, 4, 6 };
+int buttonPins[NUMBER_OF_BOXES] = { 2, 3, 4, 5, 6 };
 
 // Array to hold servo pin numbers
-int servoPins[NUMBER_OF_BOXES] = { 11, 12, 9, 10, 8 };
+int servoPins[NUMBER_OF_BOXES] = { 11, 12, 10, 9, 8 };
 // Variables to control debouncing
 
 long debounceDelay = 50;  // the debounce time; increase if the output flickers
@@ -107,14 +107,14 @@ void loop() {
         buttons[i].state = buttons[i].reading;
         // If the button is pressed and the box is closed...
         if ((buttons[i].state == 1) && (boxes[i].boxState < 0)) {
-          Serial.print("{\"code\": 201, \"explain\": \"Success: Manually opened box " + String(i + 1) + "\"}");  // print a message to the serial monitor
+          Serial.println("{\"code\": 201, \"explain\": \"Success: Manually opened box " + String(i + 1) + "\"}");  // print a message to the serial monitor
           boxes[i].servo.write(RELEASE_ANGLE);      // open the box
           boxes[i].boxState = 1;        // change the state of the box
           buttons[i].lastDebounceTime = millis();  // update the debounce timer
         }
         // If the button is pressed and the box is open...
         else if ((buttons[i].state == 1) && (boxes[i].boxState > 0)) {
-          Serial.print("{\"code\": 201, \"explain\": \"Success: Manually closed box " + String(i + 1) + "\"}");  // print a message to the serial monitor
+          Serial.println("{\"code\": 201, \"explain\": \"Success: Manually closed box " + String(i + 1) + "\"}");  // print a message to the serial monitor
           boxes[i].servo.write(STARTUP_ANGLE);     // close the box
           boxes[i].boxState = -1;       // change the state of the box
           buttons[i].lastDebounceTime = millis();  // update the debounce timer
