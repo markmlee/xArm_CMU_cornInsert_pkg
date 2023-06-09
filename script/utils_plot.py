@@ -46,11 +46,14 @@ class FSM_visualizer:
         self.G.add_edge('GO2_CORN', 'INSERT')
         self.G.add_edge('INSERT', 'RETURN2_CORN')
         self.G.add_edge('RETURN2_CORN', 'RETURN2_PLANE')
-        self.G.add_edge('RETURN2_PLANE', 'DONE')
+        self.G.add_edge('RETURN2_PLANE', 'DEPLOY_BOX')
+        self.G.add_edge('DEPLOY_BOX', 'DONE')
+        self.G.add_edge('DEPLOY_BOX', 'WAIT')
+        self.G.add_edge('WAIT', 'STOW')
 
-        self.pos = {'STOW': (0, 0), 'GO2_PLANE': (0, 1), 'GO2_CAM_POSE': (0, 2), 'REQ_DETECT': (0, 3),
+        self.pos = {'WAIT': (2, 2), 'STOW': (0, 0), 'GO2_PLANE': (0, 1), 'GO2_CAM_POSE': (0, 2), 'REQ_DETECT': (0, 3),
                     'GO2_SEARCH': (0.5, 3), 'GO2_CORN': (0, 4), 'INSERT': (1, 4), 'RETURN2_CORN': (1, 3),
-                    'RETURN2_PLANE': (1, 2), 'DONE': (1, 1)}
+                    'RETURN2_PLANE': (1, 2),  'DEPLOY_BOX': (2, 3), 'DONE': (1, 1)}
 
         if self.fig is None or self.ax is None:
             self.fig, self.ax = plt.subplots(figsize=(10, 6))  # Adjust the figure size according to your preference

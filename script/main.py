@@ -6,19 +6,19 @@ import time
 import math
 import argparse
 
-#ROS
+# ROS
 import rospy
 
-#FSM
+# FSM
 import smach
 import smach_ros
 
 
-#API
+# API
 from xarm.wrapper import XArmAPI
 from configparser import ConfigParser
 
-#custom helper library
+# custom helper library
 import xArm_Motion as xArm_Motion
 import fsm as fsm
 
@@ -33,27 +33,26 @@ import fsm as fsm
 # author: Mark Lee (MoonRobotics@cmu.edu)
 # version: 1.0 (05/2023)
 #######################################################
-""" 
-
+"""
 
 
 def get_args_parser():
-    parser = argparse.ArgumentParser('xArm_motion', add_help=False)
+    parser = argparse.ArgumentParser("xArm_motion", add_help=False)
     # relevant parameters
-    parser.add_argument('--ip', default='192.168.1.213', type=str)
-       
+    parser.add_argument("--ip", default="192.168.1.213", type=str)
+
     return parser
+
 
 if __name__ == "__main__":
     print(" ================ start main script ============ ")
-    parser = argparse.ArgumentParser('xArm_motion', parents=[get_args_parser()])
+    parser = argparse.ArgumentParser("xArm_motion", parents=[get_args_parser()])
     args = parser.parse_args()
 
-    #create FSM class
+    # create FSM class
     fsm_instance = fsm.FSM()
-    
-    #run FSM to interface with xArm class 
-    fsm_instance.run_fsm()
 
+    # run FSM to interface with xArm class
+    fsm_instance.run_fsm()
 
     print(" ================ completed main script ============ ")
