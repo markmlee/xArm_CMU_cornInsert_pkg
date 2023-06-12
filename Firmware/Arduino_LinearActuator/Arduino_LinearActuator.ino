@@ -1,59 +1,67 @@
-#define MOTORPIN1 11
-#define MOTORPIN2 12
 
-#define waitTimeSensorMS 5000
-#define waitTimeMotorMS 5000
-int x;
+
+
+int gripper_state = 1;
+
+int relay_1_pin = 11;
+int relay_2_pin = 12;
+
+// A buffer to hold incoming commands from the Serial input
+char inputBuffer[200];
+int bufferIndex = 0;
 
 void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(115200);
-  Serial.setTimeout(1);
-  
-  //toggle Heartbeat LED
-  pinMode(LED_BUILTIN, OUTPUT);
-  //digital out for Relay 7,8
-  pinMode(MOTORPIN1, OUTPUT);
-  pinMode(MOTORPIN2, OUTPUT);
-  
+
+  pinMode(relay_1_pin, OUTPUT);
+  pinMode(relay_2_pin, OUTPUT);
+
+  digitalWrite(relay_1_pin, HIGH);
+  digitalWrite(relay_2_pin, LOW);
+
+  Serial.begin(9600);  // begin serial communication
 }
 
+
 void loop() {
-  // put your main code here, to run repeatedly:
+  // Check if any data is available on the Serial input
+  while (Serial.available()) {
+    char inChar = (char)Serial.read();
 
-  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on 
-  delay(500);                       // wait for half a second
-  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off 
-  delay(500);   
+    // If newline character is received, a full command is ready for parsing
+    if (inChar == '\n') {
+      inputBuffer[bufferIndex] = '\0';  // Null-terminate the C string
 
-  digitalWrite(MOTORPIN1, HIGH);
-  digitalWrite(MOTORPIN2, HIGH);
+      char command = strtok(inputBuffer, " ")[0];  // Take the first character as the command
 
-  // wait for serial cmd
-  //while (!Serial.available());
+      switch (command) {
+        case 'o':  // Open command
+          {
+            digitalWrite(relay_1_pin, HIGH);
+            digitalWrite(relay_2_pin, LOW);
 
-  // get serial cmd
-  x = Serial.readString().toInt();
+            gripper_state = 1;
+            Serial.println("{\"code\": 200, \"explain\": \"Success: Opened gripper\"}");
+            break;
+          }
+        case 'c':
+          {  // Close command
 
-  // valid cmd
-  if(x == 1){
-    digitalWrite(MOTORPIN1, HIGH);
-    digitalWrite(MOTORPIN2, LOW);
-    
-    delay(waitTimeSensorMS);
+            digitalWrite(relay_1_pin, LOW);
+            digitalWrite(relay_2_pin, HIGH);
+            gripper_state = -1;
+            Serial.println("{\"code\": 200, \"explain\": \"Success: Closed gripper\"}");
+            break;
+          }
+        default:
+          Serial.println("{\"code\": 400, \"explain\": \"Error: Unknown command\"}");
+          break;
+      }
 
-    digitalWrite(MOTORPIN1, LOW);
-    digitalWrite(MOTORPIN2, HIGH);
-
-    delay(waitTimeMotorMS);
-
-    digitalWrite(MOTORPIN1, HIGH);
-    digitalWrite(MOTORPIN2, HIGH);
-    
-    Serial.print(x+1);
-
-    x = 0;
+      // Clear the inputBuffer ready for the next command
+      bufferIndex = 0;
+    } else if (bufferIndex < sizeof(inputBuffer) - 1) {
+      // Append the read character to the input buffer
+      inputBuffer[bufferIndex++] = inChar;
+    }
   }
-  
-
 }
