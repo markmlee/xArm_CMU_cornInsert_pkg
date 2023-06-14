@@ -150,8 +150,9 @@ class INSERT_SENSOR(smach.State):
         rospy.loginfo("Executing state INSERT_SENSOR")
         plotter.highlight_only_input_node("INSERT_SENSOR")
         gripper.close_gripper()
-        rospy.sleep(3)
+        rospy.sleep(6)
         gripper.open_gripper()
+        rospy.sleep(6)
         return "success"
 
 
