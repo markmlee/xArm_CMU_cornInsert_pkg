@@ -36,7 +36,7 @@ from std_msgs.msg import String
 
 ### global terms ###
 # create xArm Motion instance
-xArm_instance = xArm_Motion.xArm_Motion("192.168.1.213")
+xArm_instance = xArm_Motion.xArm_Motion("192.168.1.196")
 xArm_instance.initialize_robot()
 
 # create visualizer

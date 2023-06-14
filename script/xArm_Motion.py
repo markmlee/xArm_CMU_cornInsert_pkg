@@ -31,7 +31,7 @@ class xArm_Motion():
         self.ip = ip_addr
 
         # create ChAruco_detect class
-        self.ChAruco_detector = ChAruco_detect.ChAruco()
+        # self.ChAruco_detector = ChAruco_detect.ChAruco()
         
 
     def initialize_robot(self):
