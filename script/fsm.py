@@ -16,7 +16,8 @@ import smach_ros
 # custom helper library
 import xArm_Motion as xArm_Motion
 import utils_plot as fsm_plot
-import arduino_comms as arduino_comms
+import box_comms as box_comms
+import gripper_comms as gripper_comms
 
 from std_msgs.msg import String
 
@@ -44,7 +45,11 @@ plotter = fsm_plot.FSM_visualizer()
 plotter.create_graph()
 
 # arduino comms
-box_deploy = arduino_comms.arduino_comms()
+box_deploy = box_comms.box_comms()
+
+
+# gripper comms
+gripper = gripper_comms.gripper_comms()
 
 
 class WAIT(smach.State):
@@ -78,7 +83,7 @@ class STOW(smach.State):
         rospy.loginfo("Executing state STOW")
         plotter.highlight_only_input_node("STOW")
         xArm_instance.go_to_home()
-        time.sleep(1)
+        rospy.sleep(1)
         return "outcome1"
 
 
@@ -92,7 +97,7 @@ class GO2_PLANE(smach.State):
         rospy.loginfo("Executing state GO2_PLANE")
         plotter.highlight_only_input_node("GO2_PLANE")
         xArm_instance.go_to_plane()
-        time.sleep(1)
+        rospy.sleep(1)
         return "outcome1"
 
 
@@ -106,7 +111,7 @@ class GO2_CAM_POSE(smach.State):
         rospy.loginfo("Executing state GO2_CAM_POSE")
         plotter.highlight_only_input_node("GO2_CAM_POSE")
         xArm_instance.go_to_rotated_plane_cam()
-        time.sleep(1)
+        rospy.sleep(1)
         return "outcome1"
 
 
@@ -130,6 +135,24 @@ class DEPLOY_BOX(smach.State):
         plotter.highlight_only_input_node("DEPLOY_BOX")
         box_deploy.deploy_box(userdata.box_counter)
         return "outcome2"
+
+
+class INSERT_SENSOR(smach.State):
+    global xArm_instance, plotter
+
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=["error", "success"],
+        )
+
+    def execute(self, userdata):
+        rospy.loginfo("Executing state INSERT_SENSOR")
+        plotter.highlight_only_input_node("INSERT_SENSOR")
+        gripper.close_gripper()
+        rospy.sleep(3)
+        gripper.open_gripper()
+        return "success"
 
 
 class REQ_DETECT(smach.State):
@@ -203,8 +226,18 @@ class FSM:
             smach.StateMachine.add(
                 "GO2_CORN",
                 GO2_CORN(),
-                transitions={"outcome1": "DEPLOY_BOX"},
+                transitions={"outcome1": "INSERT_SENSOR"},
             )
+
+            smach.StateMachine.add(
+                "INSERT_SENSOR",
+                INSERT_SENSOR(),
+                transitions={
+                    "error": "INSERT_SENSOR",
+                    "success": "DEPLOY_BOX",
+                },
+            )
+
             smach.StateMachine.add(
                 "DEPLOY_BOX",
                 DEPLOY_BOX(),

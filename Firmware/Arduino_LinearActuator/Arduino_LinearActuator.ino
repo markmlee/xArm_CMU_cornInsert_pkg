@@ -3,8 +3,8 @@
 
 int gripper_state = 1;
 
-int relay_1_pin = 11;
-int relay_2_pin = 12;
+int relay_1_pin = 14;
+int relay_2_pin = 15;
 
 // A buffer to hold incoming commands from the Serial input
 char inputBuffer[200];
