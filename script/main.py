@@ -39,7 +39,7 @@ import fsm as fsm
 def get_args_parser():
     parser = argparse.ArgumentParser("xArm_motion", add_help=False)
     # relevant parameters
-    parser.add_argument("--ip", default="192.168.1.196", type=str)
+    parser.add_argument("--ip", default="192.168.1.213", type=str)
 
     return parser
 

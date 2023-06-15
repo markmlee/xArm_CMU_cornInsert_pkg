@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import sys
+
+import numpy as np
 import rospy
 from geometry_msgs.msg import Pose
 import time
@@ -11,6 +13,7 @@ from xarm.wrapper import XArmAPI
 #custom helper library
 import ChAruco_detect as ChAruco_detect
 import cv2
+from stalk_detect.srv import GetStalk
 
 """ 
 #######################################################
@@ -40,35 +43,50 @@ class xArm_Motion():
         self.arm.motion_enable(enable=True)
         self.arm.set_mode(0)
         self.arm.set_state(state=0)
-        self.arm.reset(wait=True)
+        # self.arm.reset(wait=True)
 
     def go_to_home(self):
         print(" ---- going to home position ----")
-        self.arm.move_gohome(wait=True)
+        # self.arm.move_gohome(wait=True)
+        self.arm.set_servo_angle(angle=[0, -90, 0, 0, 0, 0], is_radian=False, wait=True)
 
     def go_to_plane(self):
         print(" ---- going to plane joint position ----")
-        self.arm.set_servo_angle(angle=[0, -44.9, -62.5, 0, 107.3, 0], is_radian=False, wait=True)
+        self.arm.set_servo_angle(angle=[0, -45.2, -43.9, 0, 0, 0], is_radian=False, wait=True)
 
     def go_to_rotated_plane_cam(self):
-        print(f" ---- rotating EE -90 deg Y  ----")
-        self.arm.set_position_aa(axis_angle_pose=[0, 0, 0, 0, -90, 0], relative=True, wait=True)
+        # print(f" ---- rotating EE -90 deg Y  ----")
+        # self.arm.set_position_aa(axis_angle_pose=[0, 0, 0, 0, -90, 0], relative=True, wait=True)
+        pass
 
     def get_stalk_pose(self):
         print(f" ---- getting stalk pose ----")
 
-        # get pose
-        gotpose, rvec, tvec = self.ChAruco_detector.get_offset(debug=True)
-        return gotpose, rvec, tvec
+        rospy.wait_for_service('get_stalk')
+        get_stalk_service = rospy.ServiceProxy('get_stalk', GetStalk)
+        try:
+            resp1 = get_stalk_service(num_frames=5, timeout=20.0)
+        except rospy.ServiceException as exc:
+            print("Service did not process request: " + str(exc))
+
+        print(' ************** Got response from stalk detection:', resp1.position)
+
+        print("POSE IS", [resp1.position.x, resp1.position.y, resp1.position.z])
+
+        return 0, 0, np.array([resp1.position.x, resp1.position.y, resp1.position.z])
+
+        # # get pose
+        # gotpose, rvec, tvec = self.ChAruco_detector.get_offset(debug=True)
+        # return gotpose, rvec, tvec
 
     def go_to_stalk_pose(self):
-
-        print(f"tvec received in motion: ")
-        print(f" ---- going to stalk pose ----")
-        self.arm.set_position_aa(axis_angle_pose=[-0.166*1000*0.8, -0.166*1000*0.8, 0.316*1000*0.8, 0, 0, 0], relative=True, wait=True)
-        time.sleep(3)
-        print(f" ---- returning from  stalk pose ----")
-        self.arm.set_position_aa(axis_angle_pose=[0.166*1000*0.8, 0.166*1000*0.8, -0.316*1000*0.8, 0, 0, 0], relative=True, wait=True)
+        pass
+        # print(f"tvec received in motion: ")
+        # print(f" ---- going to stalk pose ----")
+        # self.arm.set_position_aa(axis_angle_pose=[-0.166*1000*0.8, -0.166*1000*0.8, 0.316*1000*0.8, 0, 0, 0], relative=True, wait=True)
+        # time.sleep(3)
+        # print(f" ---- returning from  stalk pose ----")
+        # self.arm.set_position_aa(axis_angle_pose=[0.166*1000*0.8, 0.166*1000*0.8, -0.316*1000*0.8, 0, 0, 0], relative=True, wait=True)
 
 
 

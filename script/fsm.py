@@ -37,7 +37,7 @@ from std_msgs.msg import String
 
 ### global terms ###
 # create xArm Motion instance
-xArm_instance = xArm_Motion.xArm_Motion("192.168.1.196")
+xArm_instance = xArm_Motion.xArm_Motion("192.168.1.213")
 xArm_instance.initialize_robot()
 
 # create visualizer
@@ -164,6 +164,7 @@ class REQ_DETECT(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo("Executing state REQ_DETECT")
+        xArm_instance.get_stalk_pose()
         plotter.highlight_only_input_node("REQ_DETECT")
         time.sleep(1)
         return "outcome1"
