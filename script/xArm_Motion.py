@@ -48,7 +48,7 @@ class xArm_Motion():
     def go_to_home(self):
         print(" ---- going to home position ----")
         # self.arm.move_gohome(wait=True)
-        self.arm.set_servo_angle(angle=[0, -90, 0, 0, 0, 0], is_radian=False, wait=True)
+        # self.arm.set_servo_angle(angle=[0, -90, 0, 0, 0, 0], is_radian=False, wait=True)
 
     def go_to_plane(self):
         print(" ---- going to plane joint position ----")
@@ -73,7 +73,7 @@ class xArm_Motion():
 
         print("POSE IS", [resp1.position.x, resp1.position.y, resp1.position.z])
 
-        return 0, 0, np.array([resp1.position.x, resp1.position.y, resp1.position.z])
+        return  np.array([resp1.position.x, resp1.position.y, resp1.position.z])
 
         # # get pose
         # gotpose, rvec, tvec = self.ChAruco_detector.get_offset(debug=True)
