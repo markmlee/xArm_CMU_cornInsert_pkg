@@ -33,37 +33,46 @@ class FSM_visualizer:
         self.fig = None
         self.ax = None
 
+    def shutdown(self):
+        plt.close("all")
+
     def create_graph(self):
         '''
         Create a graph for the FSM
         '''
-
-        self.G.add_edge('WAIT', 'STOW')
-        self.G.add_edge('STOW', 'GO2_PLANE')
-        self.G.add_edge('GO2_PLANE','GO2_CAM_POSE')
-        self.G.add_edge('GO2_CAM_POSE', 'REQ_DETECT')
-        self.G.add_edge('REQ_DETECT', 'GO2_PLANE')
-        self.G.add_edge('REQ_DETECT', 'GO2_SEARCH')
-        self.G.add_edge('GO2_PLANE', 'GO2_CORN')
-        self.G.add_edge('GO2_CORN', 'INSERT_SENSOR')
-        self.G.add_edge('INSERT_SENSOR', 'DEPLOY_BOX')
-        self.G.add_edge('DEPLOY_BOX', 'WAIT')
-        # self.G.add_edge('INSERT_SENSOR', 'RETURN2_CORN')
-        # self.G.add_edge('RETURN2_CORN', 'RETURN2_PLANE')
-        # self.G.add_edge('RETURN2_PLANE', 'DEPLOY_BOX')
-
         
+        try:
+            self.G.add_edge('WAIT', 'STOW')
+            self.G.add_edge('STOW', 'GO2_PLANE')
+            self.G.add_edge('GO2_PLANE','GO2_CAM_POSE')
+            self.G.add_edge('GO2_CAM_POSE', 'REQ_DETECT')
+            self.G.add_edge('REQ_DETECT', 'GO2_PLANE')
+            self.G.add_edge('REQ_DETECT', 'GO2_SEARCH')
+            self.G.add_edge('GO2_PLANE', 'GO2_CORN')
+            self.G.add_edge('GO2_CORN', 'INSERT_SENSOR')
+            self.G.add_edge('INSERT_SENSOR', 'DEPLOY_BOX')
+            self.G.add_edge('DEPLOY_BOX', 'WAIT')
+            # self.G.add_edge('INSERT_SENSOR', 'RETURN2_CORN')
+            # self.G.add_edge('RETURN2_CORN', 'RETURN2_PLANE')
+            # self.G.add_edge('RETURN2_PLANE', 'DEPLOY_BOX')
 
-        self.pos = {'WAIT': (2, 2), 'STOW': (0, 0), 'GO2_PLANE': (0, 1), 'GO2_CAM_POSE': (0, 2), 'REQ_DETECT': (0, 3),
-                    'GO2_SEARCH': (0.5, 3), 'GO2_CORN': (0, 4), 'INSERT_SENSOR': (1, 4), 'RETURN2_CORN': (1, 3),
-                    'RETURN2_PLANE': (1, 2),  'DEPLOY_BOX': (2, 3), 'DONE': (1, 1)}
+            
 
-        if self.fig is None or self.ax is None:
-            self.fig, self.ax = plt.subplots(figsize=(10, 6))  # Adjust the figure size according to your preference
+            self.pos = {'WAIT': (2, 2), 'STOW': (0, 0), 'GO2_PLANE': (0, 1), 'GO2_CAM_POSE': (0, 2), 'REQ_DETECT': (0, 3),
+                        'GO2_SEARCH': (0.5, 3), 'GO2_CORN': (0, 4), 'INSERT_SENSOR': (1, 4), 'RETURN2_CORN': (1, 3),
+                        'RETURN2_PLANE': (1, 2),  'DEPLOY_BOX': (2, 3), 'DONE': (1, 1)}
 
-        plt.axis('off')
-        plt.ion() #non-blocking
-        plt.show()
+            if self.fig is None or self.ax is None:
+                self.fig, self.ax = plt.subplots(figsize=(10, 6))  # Adjust the figure size according to your preference
+
+            plt.axis('off')
+            plt.ion() #non-blocking
+            plt.show()
+
+        except KeyboardInterrupt:
+            print(f"shutting down plotter")
+            plt.close("all")
+
 
     def highlight_all_nodes(self):
         '''
@@ -108,10 +117,17 @@ class FSM_visualizer:
             nx.draw_networkx_labels(self.G, self.pos, labels=labels, font_color='black', ax=self.ax)
             nx.draw_networkx_edges(self.G, self.pos, ax=self.ax, arrows=True, arrowstyle='->')
 
-        ani = animation.FuncAnimation(self.fig, update_colors_labels, frames=[0], repeat=False)
+        try:
 
-        plt.draw()
-        plt.pause(1)
+            ani = animation.FuncAnimation(self.fig, update_colors_labels, frames=[0], repeat=False)
+
+            plt.draw()
+            plt.pause(1)
+
+        except KeyboardInterrupt:
+            print(f"shutting down plotter")
+            plt.close("all")
+
         
 
 # testing for plot code

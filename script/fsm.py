@@ -5,6 +5,7 @@ import sys
 import time
 import math
 import argparse
+import signal
 
 # ROS
 import rospy
@@ -53,6 +54,13 @@ box_deploy = box_comms.box_comms()
 # gripper comms
 gripper = gripper_comms.gripper_comms()
 
+def signal_handler(sig, frame):
+    print("************** You pressed Ctrl+C! ************** ")
+    sys.exit(0)
+
+#detecting keyboard kill
+signal.signal(signal.SIGINT, signal_handler)
+
 
 class WAIT(smach.State):
     global xArm_instance, plotter
@@ -65,12 +73,15 @@ class WAIT(smach.State):
     def keyboard_callback(self, msg):
         if msg.data == "q":
             self.key_pressed = True
-
+            
     def execute(self, userdata):
         rospy.loginfo("Executing state WAIT")
         plotter.highlight_only_input_node("WAIT")
+
+        
         while not self.key_pressed:
             rospy.sleep(0.1)
+
         self.key_pressed = False
         return "outcome1"
 
@@ -112,7 +123,6 @@ class GO2_CAM_POSE(smach.State):
     def execute(self, userdata):
         rospy.loginfo("Executing state GO2_CAM_POSE")
         plotter.highlight_only_input_node("GO2_CAM_POSE")
-        xArm_instance.go_to_rotated_plane_cam()
         rospy.sleep(1)
         return "outcome1"
 
@@ -151,10 +161,10 @@ class INSERT_SENSOR(smach.State):
     def execute(self, userdata):
         rospy.loginfo("Executing state INSERT_SENSOR")
         plotter.highlight_only_input_node("INSERT_SENSOR")
-        # gripper.close_gripper()
-        # rospy.sleep(6)
-        # gripper.open_gripper()
-        # rospy.sleep(6)
+        gripper.close_gripper()
+        rospy.sleep(6)
+        gripper.open_gripper()
+        rospy.sleep(6)
         return "success"
 
 
@@ -255,7 +265,50 @@ class GO2_CORN(smach.State):
     def execute(self, userdata):
         rospy.loginfo("Executing state GO2_CORN")
         plotter.highlight_only_input_node("GO2_CORN")
-        xArm_instance.go_to_stalk_pose()
+
+        #1. pivot to face corn
+        xArm_instance.go_to_rotated_plane_cam()
+
+
+
+        #2. lookup TF transformation from corn to end effector
+        tfBuffer = tf2_ros.Buffer()
+        listener = tf2_ros.TransformListener(tfBuffer)
+
+        tf_lookup_done = False
+
+        while not tf_lookup_done:
+            try:
+                trans = tfBuffer.lookup_transform('gripper', 'corn', rospy.Time())
+                tf_lookup_done = True
+                print(f" ******** TF lookup done ******** ")
+            except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+                # print(f" ******** TF lookup error ******** ")
+                tf_lookup_done = False
+
+        print(f" need to translate : {trans.transform.translation}")
+        x = trans.transform.translation.x
+        y = trans.transform.translation.y
+        z = trans.transform.translation.z
+
+        #hard coded for initial mock test setup
+        # x = -0.03628206015960567
+        # y = -0.1458352749289401
+        # z = -0.1441743369126926
+
+        x = -x #gripper x coord is opposite direction of robot base x coord
+        y = y - 0.010 #fine tuned y offset by 10mm
+        z = -z #gripper x coord is opposite direction of robot base x coord
+        z = z/2 #fine tuned z offset by 50%
+
+        x_mm = x*1000 
+        y_mm = y*1000 
+        z_mm = z*1000
+
+
+
+        #3. move to corn position using the trans value
+        xArm_instance.go_to_stalk_pose(x_mm,y_mm,z_mm)
         time.sleep(1)
         return "outcome1"
 

@@ -55,9 +55,9 @@ class xArm_Motion():
         self.arm.set_servo_angle(angle=[0, -45.2, -43.9, 0, 0, 0], is_radian=False, wait=True)
 
     def go_to_rotated_plane_cam(self):
-        # print(f" ---- rotating EE -90 deg Y  ----")
-        # self.arm.set_position_aa(axis_angle_pose=[0, 0, 0, 0, -90, 0], relative=True, wait=True)
-        pass
+        print(f" ---- rotating EE -90 deg Y  ----")
+        self.arm.set_position_aa(axis_angle_pose=[0, 0, 0, 0, 0, -90], relative=True, wait=True)
+        
 
     def get_stalk_pose(self):
         print(f" ---- getting stalk pose ----")
@@ -79,14 +79,27 @@ class xArm_Motion():
         # gotpose, rvec, tvec = self.ChAruco_detector.get_offset(debug=True)
         # return gotpose, rvec, tvec
 
-    def go_to_stalk_pose(self):
-        pass
-        # print(f"tvec received in motion: ")
-        # print(f" ---- going to stalk pose ----")
-        # self.arm.set_position_aa(axis_angle_pose=[-0.166*1000*0.8, -0.166*1000*0.8, 0.316*1000*0.8, 0, 0, 0], relative=True, wait=True)
-        # time.sleep(3)
-        # print(f" ---- returning from  stalk pose ----")
-        # self.arm.set_position_aa(axis_angle_pose=[0.166*1000*0.8, 0.166*1000*0.8, -0.316*1000*0.8, 0, 0, 0], relative=True, wait=True)
+    def go_to_stalk_pose(self, x_mm,y_mm,z_mm):
+        print(f"now do the APPROACH MOITON")
+        
+
+        x_mm_gripper_width = 130 #100mm is roughly half width of gripper
+        x_mm_with_gripper_offest = x_mm + x_mm_gripper_width 
+        print(f"x_mm, x_mm_with_gripper_offest {x_mm, x_mm_with_gripper_offest}")
+
+        
+
+
+        print(f" ---- going to stalk pose  ----")
+
+        print(f" 1. move X first ")
+        self.arm.set_position_aa(axis_angle_pose=[x_mm_with_gripper_offest, 0, 0, 0, 0, 0], relative=True, wait=True)
+        print(f" 2. move Y second")
+        self.arm.set_position_aa(axis_angle_pose=[0, y_mm, 0, 0, 0, 0], relative=True, wait=True)
+        print(f" 3. move X third")
+        self.arm.set_position_aa(axis_angle_pose=[-x_mm_gripper_width-10, 0, 0, 0, 0, 0], relative=True, wait=True)
+        print(f" 4. move Z fourth")
+        self.arm.set_position_aa(axis_angle_pose=[0, 0, z_mm, 0, 0, 0], relative=True, wait=True)
 
 
 
