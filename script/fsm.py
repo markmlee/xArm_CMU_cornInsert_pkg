@@ -40,7 +40,7 @@ from std_msgs.msg import String
 
 ### global terms ###
 # create xArm Motion instance
-xArm_instance = xArm_Motion.xArm_Motion("192.168.1.213")
+xArm_instance = xArm_Motion.xArm_Motion("192.168.1.214")
 xArm_instance.initialize_robot()
 
 # create visualizer
@@ -48,7 +48,7 @@ plotter = fsm_plot.FSM_visualizer()
 plotter.create_graph()
 
 # arduino comms
-box_deploy = box_comms.box_comms()
+# box_deploy = box_comms.box_comms()
 
 
 # gripper comms
@@ -165,6 +165,7 @@ class INSERT_SENSOR(smach.State):
         rospy.sleep(6)
         gripper.open_gripper()
         rospy.sleep(6)
+        xArm_instance.go_to_stalk_pose_reverse()
         return "success"
 
 
@@ -297,9 +298,7 @@ class GO2_CORN(smach.State):
         # z = -0.1441743369126926
 
         x = -x #gripper x coord is opposite direction of robot base x coord
-        y = y - 0.010 #fine tuned y offset by 10mm
         z = -z #gripper x coord is opposite direction of robot base x coord
-        z = z/2 #fine tuned z offset by 50%
 
         x_mm = x*1000 
         y_mm = y*1000 

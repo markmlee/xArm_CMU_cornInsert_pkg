@@ -47,8 +47,7 @@ class xArm_Motion():
 
     def go_to_home(self):
         print(" ---- going to home position ----")
-        # self.arm.move_gohome(wait=True)
-        # self.arm.set_servo_angle(angle=[0, -90, 0, 0, 0, 0], is_radian=False, wait=True)
+        self.arm.set_servo_angle(angle=[0, -90, 0, 0, 0, 0], is_radian=False, wait=True)
 
     def go_to_plane(self):
         print(" ---- going to plane joint position ----")
@@ -83,8 +82,10 @@ class xArm_Motion():
         print(f"now do the APPROACH MOITON")
         
 
-        x_mm_gripper_width = 130 #100mm is roughly half width of gripper
-        x_mm_with_gripper_offest = x_mm + x_mm_gripper_width 
+        x_mm_gripper_width = 80 #80mm is roughly center of gripper to edge of C clamp
+        x_mm_with_gripper_offest = x_mm + x_mm_gripper_width
+
+        y_mm_tuned_offset = -25
         print(f"x_mm, x_mm_with_gripper_offest {x_mm, x_mm_with_gripper_offest}")
 
         
@@ -95,13 +96,29 @@ class xArm_Motion():
         print(f" 1. move X first ")
         self.arm.set_position_aa(axis_angle_pose=[x_mm_with_gripper_offest, 0, 0, 0, 0, 0], relative=True, wait=True)
         print(f" 2. move Y second")
-        self.arm.set_position_aa(axis_angle_pose=[0, y_mm, 0, 0, 0, 0], relative=True, wait=True)
+        self.arm.set_position_aa(axis_angle_pose=[0, y_mm+y_mm_tuned_offset, 0, 0, 0, 0], relative=True, wait=True)
         print(f" 3. move X third")
-        self.arm.set_position_aa(axis_angle_pose=[-x_mm_gripper_width-10, 0, 0, 0, 0, 0], relative=True, wait=True)
-        print(f" 4. move Z fourth")
-        self.arm.set_position_aa(axis_angle_pose=[0, 0, z_mm, 0, 0, 0], relative=True, wait=True)
+        self.arm.set_position_aa(axis_angle_pose=[-x_mm_gripper_width, 0, 0, 0, 0, 0], relative=True, wait=True)
+        
+        #save values for reversing out
+        self.reverse_x = -1*(-x_mm_gripper_width)
+        self.reverse_y = -1*(y_mm+y_mm_tuned_offset)
+        # print(f" 4. move Z fourth")
+        # self.arm.set_position_aa(axis_angle_pose=[0, 0, z_mm, 0, 0, 0], relative=True, wait=True)
 
+    def go_to_stalk_pose_reverse(self):
+        print(f"now do the REVERSE MOITON")
 
+        print(f" 1. move out X first")
+        self.arm.set_position_aa(axis_angle_pose=[self.reverse_x, 0, 0, 0, 0, 0], relative=True, wait=True)
+        
+        print(f" 2. move out Y second")
+        self.arm.set_position_aa(axis_angle_pose=[0, self.reverse_y, 0, 0, 0, 0], relative=True, wait=True)
+
+        print(f" 3. go to init pose ")
+        self.go_to_home()
+
+        
 
     def go_to_rotated_plane(self):
         print(f" ---- rotating EE 90 deg  ----")
