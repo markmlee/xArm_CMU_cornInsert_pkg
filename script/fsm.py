@@ -40,7 +40,7 @@ from std_msgs.msg import String
 
 ### global terms ###
 # create xArm Motion instance
-xArm_instance = xArm_Motion.xArm_Motion("192.168.1.214")
+xArm_instance = xArm_Motion.xArm_Motion("192.168.1.196")
 xArm_instance.initialize_robot()
 
 # create visualizer
@@ -48,7 +48,7 @@ plotter = fsm_plot.FSM_visualizer()
 plotter.create_graph()
 
 # arduino comms
-# box_deploy = box_comms.box_comms()
+box_deploy = box_comms.box_comms()
 
 
 # gripper comms
@@ -261,12 +261,14 @@ class GO2_CORN(smach.State):
     global xArm_instance, plotter
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=["outcome1"])
+        smach.State.__init__(self, outcomes=["outcome1", "outcome2" ])
 
     def execute(self, userdata):
         rospy.loginfo("Executing state GO2_CORN")
         plotter.highlight_only_input_node("GO2_CORN")
 
+        
+        #0. move away from corn to prevent hitting during rotation
         #1. pivot to face corn
         xArm_instance.go_to_rotated_plane_cam()
 
@@ -292,24 +294,31 @@ class GO2_CORN(smach.State):
         y = trans.transform.translation.y
         z = trans.transform.translation.z
 
-        #hard coded for initial mock test setup
-        # x = -0.03628206015960567
-        # y = -0.1458352749289401
-        # z = -0.1441743369126926
+        # reject spurious cam pose by thresholding Y
+        if y > -0.10 or y < -0.75:
+            print(f" ******** GARBAGE CAM DETECTION. GOING TO INIT *******")
+            return "outcome2"
+        
+        else:
 
-        x = -x #gripper x coord is opposite direction of robot base x coord
-        z = -z #gripper x coord is opposite direction of robot base x coord
+            #hard coded for initial mock test setup
+            # x = -0.03628206015960567
+            # y = -0.1458352749289401
+            # z = -0.1441743369126926
 
-        x_mm = x*1000 
-        y_mm = y*1000 
-        z_mm = z*1000
+            x = -x #gripper x coord is opposite direction of robot base x coord
+            z = -z #gripper x coord is opposite direction of robot base x coord
+
+            x_mm = x*1000 
+            y_mm = y*1000 
+            z_mm = z*1000
 
 
 
-        #3. move to corn position using the trans value
-        xArm_instance.go_to_stalk_pose(x_mm,y_mm,z_mm)
-        time.sleep(1)
-        return "outcome1"
+            #3. move to corn position using the trans value
+            xArm_instance.go_to_stalk_pose(x_mm,y_mm,z_mm)
+            time.sleep(1)
+            return "outcome1"
 
 
 class DONE(smach.State):
@@ -356,7 +365,7 @@ class FSM:
             smach.StateMachine.add(
                 "GO2_CORN",
                 GO2_CORN(),
-                transitions={"outcome1": "INSERT_SENSOR"},
+                transitions={"outcome1": "INSERT_SENSOR", "outcome2": "WAIT"},
             )
 
             smach.StateMachine.add(
