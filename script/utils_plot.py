@@ -46,21 +46,21 @@ class FSM_visualizer:
             self.G.add_edge('STOW', 'GO2_PLANE')
             self.G.add_edge('GO2_PLANE','GO2_CAM_POSE')
             self.G.add_edge('GO2_CAM_POSE', 'REQ_DETECT')
-            self.G.add_edge('REQ_DETECT', 'GO2_PLANE')
+            self.G.add_edge('REQ_DETECT', 'GO2_CORN_XY')
             self.G.add_edge('REQ_DETECT', 'GO2_SEARCH')
-            self.G.add_edge('GO2_PLANE', 'GO2_CORN')
-            self.G.add_edge('GO2_CORN', 'INSERT_SENSOR')
+            self.G.add_edge('GO2_CORN_XY', 'GO2_CORN_Z')
+            self.G.add_edge('GO2_CORN_Z', 'GO2_CORN_XY_NEW')
+            self.G.add_edge('GO2_CORN_XY_NEW', 'INSERT_SENSOR')
             self.G.add_edge('INSERT_SENSOR', 'DEPLOY_BOX')
             self.G.add_edge('DEPLOY_BOX', 'WAIT')
-            # self.G.add_edge('INSERT_SENSOR', 'RETURN2_CORN')
-            # self.G.add_edge('RETURN2_CORN', 'RETURN2_PLANE')
-            # self.G.add_edge('RETURN2_PLANE', 'DEPLOY_BOX')
+
 
             
 
             self.pos = {'WAIT': (2, 2), 'STOW': (0, 0), 'GO2_PLANE': (0, 1), 'GO2_CAM_POSE': (0, 2), 'REQ_DETECT': (0, 3),
-                        'GO2_SEARCH': (0.5, 3), 'GO2_CORN': (0, 4), 'INSERT_SENSOR': (1, 4), 'RETURN2_CORN': (1, 3),
-                        'RETURN2_PLANE': (1, 2),  'DEPLOY_BOX': (2, 3), 'DONE': (1, 1)}
+                        'GO2_SEARCH': (0.5, 3), 'GO2_CORN_XY': (0, 4), 'GO2_CORN_Z': (0.5, 4), 'GO2_CORN_XY_NEW': (1, 4),
+                        'INSERT_SENSOR': (2, 4), 
+                        'DEPLOY_BOX': (2, 3)}
 
             if self.fig is None or self.ax is None:
                 self.fig, self.ax = plt.subplots(figsize=(10, 6))  # Adjust the figure size according to your preference
@@ -152,3 +152,4 @@ if __name__ == "__main__":
     
 
     print(" ================ ending plot script ============ ")
+
