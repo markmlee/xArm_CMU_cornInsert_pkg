@@ -15,6 +15,9 @@ import xArm_Motion as xArm_Motion
 
 from configparser import ConfigParser
 
+#ROS
+from std_msgs.msg import Int32
+
 
 # Sampling rate
 sampling_rate = 44100
@@ -27,7 +30,7 @@ audio_input_history = np.array([])  # Initialize an empty array
 
 collision_threshold = 0.01
 collision_count = 0
-
+stalk_count = 0
 arm = XArmAPI("192.168.1.213")
 arm.motion_enable(enable=True)
 arm.set_mode(0)
@@ -36,44 +39,46 @@ arm.set_state(state=0)
 collision_flag = False
 
 def process_audio_data(msg):
-    global audio_input, collision_count, audio_input_history, collision_flag
-    audio_data_input = msg.data
+    global collision_flag, collision_count, stalk_count, collision_count
+    
+    msg_converted = msg.data 
 
-    # Convert list into np array
-    audio_data_input_np = np.asarray(audio_data_input).reshape((-1, 1))
+    # print(f" received msg {msg_converted}")
 
-    # Concatenate audio data
-    audio_input = np.append(audio_input, audio_data_input_np)
+    if msg_converted != 0 and collision_flag == False:
+         
+        collision_count += 1
 
-    # Polled enough to predict
-    if len(audio_input) > sample_size_input and collision_flag is False:
-        print(f"Size of audio_input before predict: {len(audio_input)}")
 
-        audio_input_history = np.append(audio_input_history, audio_input)
+        if msg_converted == 2:
+            stalk_count += 1
 
-        # Check condition (amplitude)
-        # Get max amplitude of audio input
-        max_amplitude = np.amax(audio_input)
-
-        # Check max amplitude, break if max amplitude is greater than collision_threshold
-        if max_amplitude > collision_threshold:
-
-            print(f"************ Collision detected, count: {collision_count} ************")
+        # create buffer of size 10, and only return true if 8 of the 10 values are 2
+        if collision_count >= 20 and stalk_count >= 18:
+            print(f"************ Stalk detected ************")
 
             arm.vc_set_cartesian_velocity([0, 0, 0, 0, 0, 0], is_radian = False, is_tool_coord=False, duration=3)
             collision_flag = True
             print(f" collision_flag is now turned on {collision_flag}")
             sys.exit()
+
+        if collision_count >= 20 and stalk_count < 18:
+            collision_count = 0
+            stalk_count = 0
+
+
+        
+            
                 
 
-        audio_input = np.array([])  # Clear the array to start over
-
+        
 def initialize_node():
     rospy.init_node('sounddevice_ros_subscriber_motion')
 
 def subscribe_to_audio_topic():
-    audio_info_msg = rospy.wait_for_message('/audio4_info', AudioInfo)
-    audio_sub = rospy.Subscriber('/audio4', AudioData, process_audio_data)
+
+    audio_sub = rospy.Subscriber('/stalk_classifier', Int32, process_audio_data)
+
 
 def plot_audio_input():
     time = np.arange(0, len(audio_input_history)) / sampling_rate
@@ -118,7 +123,7 @@ if __name__ == "__main__":
             i = (i + 1) * 50
             i = 20
             #move arm down until hit ground
-            arm.vc_set_cartesian_velocity([0, 0, i, 0, 0, 0], is_radian = False, is_tool_coord=False, duration=5) #speed in xyz,rxryrz
+            arm.vc_set_cartesian_velocity([-i, 0, 0, 0, 0, 0], is_radian = False, is_tool_coord=False, duration=5) #speed in xyz,rxryrz
             rospy.sleep(5)
 
             if collision_flag is True:

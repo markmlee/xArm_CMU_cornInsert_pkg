@@ -15,6 +15,9 @@ import xArm_Motion as xArm_Motion
 
 from configparser import ConfigParser
 
+#ROS
+from std_msgs.msg import Int32
+
 
 # Sampling rate
 sampling_rate = 44100
@@ -36,44 +39,30 @@ arm.set_state(state=0)
 collision_flag = False
 
 def process_audio_data(msg):
-    global audio_input, collision_count, audio_input_history, collision_flag
-    audio_data_input = msg.data
+    global collision_flag
+    
+    msg_converted = msg.data 
 
-    # Convert list into np array
-    audio_data_input_np = np.asarray(audio_data_input).reshape((-1, 1))
+    # print(f" received msg {msg_converted}")
 
-    # Concatenate audio data
-    audio_input = np.append(audio_input, audio_data_input_np)
+    if msg_converted == 2 and collision_flag == False:
+        
+        print(f"************ Collision detected ************")
 
-    # Polled enough to predict
-    if len(audio_input) > sample_size_input and collision_flag is False:
-        print(f"Size of audio_input before predict: {len(audio_input)}")
-
-        audio_input_history = np.append(audio_input_history, audio_input)
-
-        # Check condition (amplitude)
-        # Get max amplitude of audio input
-        max_amplitude = np.amax(audio_input)
-
-        # Check max amplitude, break if max amplitude is greater than collision_threshold
-        if max_amplitude > collision_threshold:
-
-            print(f"************ Collision detected, count: {collision_count} ************")
-
-            arm.vc_set_cartesian_velocity([0, 0, 0, 0, 0, 0], is_radian = False, is_tool_coord=False, duration=3)
-            collision_flag = True
-            print(f" collision_flag is now turned on {collision_flag}")
-            sys.exit()
+        arm.vc_set_cartesian_velocity([0, 0, 0, 0, 0, 0], is_radian = False, is_tool_coord=False, duration=3)
+        collision_flag = True
+        print(f" collision_flag is now turned on {collision_flag}")
+        sys.exit()
                 
 
-        audio_input = np.array([])  # Clear the array to start over
-
+        
 def initialize_node():
     rospy.init_node('sounddevice_ros_subscriber_motion')
 
 def subscribe_to_audio_topic():
-    audio_info_msg = rospy.wait_for_message('/audio4_info', AudioInfo)
-    audio_sub = rospy.Subscriber('/audio4', AudioData, process_audio_data)
+
+    audio_sub = rospy.Subscriber('/ground_classifier', Int32, process_audio_data)
+
 
 def plot_audio_input():
     time = np.arange(0, len(audio_input_history)) / sampling_rate

@@ -50,7 +50,14 @@ class xArm_Motion_Audio():
         # self.arm.set_servo_angle(angle=[0, -45.2, -43.9, 0, 0, 0], is_radian=False, wait=True)
         self.arm.set_servo_angle(angle=[0, -78.4, -21.1, 0, 10.4, 0], is_radian=False, wait=True)
 
+        self.arm.set_position_aa(axis_angle_pose=[-110, 0, 0, 0, 0, 0], relative=True, wait=True)
+
+
     def go_to_rotated_plane_cam(self):
+
+        #move away from center by +X, before moving Y due to kinematic constraints
+        self.arm.set_position_aa(axis_angle_pose=[+110, 0, 0, 0, 0, 0], relative=True, wait=True)
+
         print(f" ---- move Y away to prevent hitting corn during rotation  ----")
         self.arm.set_position_aa(axis_angle_pose=[0, 35, 0, 0, 0, 0], relative=True, wait=True)
 
@@ -144,7 +151,7 @@ class xArm_Motion_Audio():
 
         
 
-    def stop_velocity_control(self):
+    def stop_velocity_control_z(self):
 
         # stop velocity control
         self.arm.vc_set_cartesian_velocity([0, 0, 0, 0, 0, 0], is_radian = False, is_tool_coord=False, duration=1)
@@ -159,33 +166,44 @@ class xArm_Motion_Audio():
         print(f" 3. move Z up 3/10 with z: {z_mm_tuned}")
         self.arm.set_position_aa(axis_angle_pose=[0, 0, z_mm_tuned, 0, 0, 0], relative=True, wait=True)
 
+    
 
     def go_to_stalk_pose_XY_new(self, x_mm,y_mm):
 
-        
-        x_mm_tuned_offset = 29
-        x_mm_gripper_width = 80+5 #80mm is roughly center of gripper to edge of C clamp, 5 is fine-tuned offset
-      
-        x_mm_deeper_clamp_insert = 14
+       
+        print(f" ---- 4. going to X InGripper with Audio ----")
+        # set cartesian velocity control mode
+        self.arm.set_mode(5)
+        self.arm.set_state(0)
+        time.sleep(1)
+
+        speed_x = 50
+        self.arm.vc_set_cartesian_velocity([-speed_x, 0, 0, 0, 0, 0], is_radian = False, is_tool_coord=False, duration=5) #speed in xyz,rxryrz
+        rospy.sleep(5)
+
+
+    def stop_velocity_control_x(self):
+
+        # stop velocity control
+        self.arm.vc_set_cartesian_velocity([0, 0, 0, 0, 0, 0], is_radian = False, is_tool_coord=False, duration=1)
+        time.sleep(1)
+
+        # set position control mode and then move up fixed distance for corn 
+        self.arm.set_mode(0)
+        self.arm.set_state(0)
+        time.sleep(1)
+
         x_mm_deeper_clamp_retract = 25
 
 
         y_mm_funnel = 12
 
-
-        print(f" ---- going to stalk pose  XY new ----")
-        print(f" 4. move X center w gripper 4/10")
-        self.arm.set_position_aa(axis_angle_pose=[-x_mm_gripper_width-x_mm_tuned_offset, 0, 0, 0, 0, 0], relative=True, wait=True)
-
-        print(f" 5. move X go deeper 5/10")
-        self.arm.set_position_aa(axis_angle_pose=[-x_mm_deeper_clamp_insert, 0, 0, 0, 0, 0], relative=True, wait=True)
-
-        print(f" 6. move X to recenter 6/10")
+        print(f" 5. move X to recenter 6/10")
         self.arm.set_position_aa(axis_angle_pose=[+x_mm_deeper_clamp_retract, 0, 0, 0, 0, 0], relative=True, wait=True)
 
-        print(f" 6.5 move Y to get corn on edge of funnel 6.5/10")
+        print(f" 6. move Y to get corn on edge of funnel 6.5/10")
         self.arm.set_position_aa(axis_angle_pose=[0, y_mm_funnel, 0, 0, 0, 0], relative=True, wait=True)
-        
+
  
 
     def go_to_stalk_pose_reverse(self):

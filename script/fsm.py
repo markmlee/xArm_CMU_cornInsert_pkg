@@ -18,16 +18,15 @@ import smach
 import smach_ros
 
 # custom helper library
-import xArm_Motion_audio as xArm_Motion
-import utils_plot_audio as fsm_plot
+import xArm_Motion as xArm_Motion
+import utils_plot as fsm_plot
 import box_comms as box_comms
 import gripper_comms as gripper_comms
 from sounddevice_ros.msg import AudioInfo, AudioData
 
 
 from std_msgs.msg import String
-
-from CMU_Find_Stalk.msg import stalk, line
+from stalk_detect.msg import stalk, line
 
 """ 
 #######################################################
@@ -192,44 +191,44 @@ class REQ_DETECT(smach.State):
 
         if self.counter < 1:
             self.counter += 1
-            rospy.loginfo("Executing state REQ_DETECT")
-            plotter.highlight_only_input_node("REQ_DETECT")
-            detected_stalk: stalk = xArm_instance.get_stalk_pose()
+            # rospy.loginfo("Executing state REQ_DETECT")
+            # plotter.highlight_only_input_node("REQ_DETECT")
+            # detected_stalk: stalk = xArm_instance.get_stalk_pose()
 
-            #add transformation to TF tree
-            broadcaster = tf2_ros.StaticTransformBroadcaster()
-            static_transformStamped = geometry_msgs.msg.TransformStamped()
+            # #add transformation to TF tree
+            # broadcaster = tf2_ros.StaticTransformBroadcaster()
+            # static_transformStamped = geometry_msgs.msg.TransformStamped()
 
-            #TF header
-            static_transformStamped.header.stamp = rospy.Time.now()
-            static_transformStamped.header.frame_id = "camera_link"
-            static_transformStamped.child_frame_id = "corn_cam"
+            # #TF header
+            # static_transformStamped.header.stamp = rospy.Time.now()
+            # static_transformStamped.header.frame_id = "camera_link"
+            # static_transformStamped.child_frame_id = "corn_cam"
 
-            # TF Position
-            Z = 0.12
-            stalk_intercept, stalk_slope = detected_stalk.stalk_line.intercept, detected_stalk.stalk_line.slope
-            t = (Z - stalk_intercept.z) / stalk_slope.z
-            static_transformStamped.transform.translation.x = stalk_intercept.x + stalk_slope.x * t
-            static_transformStamped.transform.translation.y = stalk_intercept.y + stalk_slope.y * t
-            static_transformStamped.transform.translation.z = Z
+            # # TF Position
+            # Z = 0.12
+            # stalk_intercept, stalk_slope = detected_stalk.stalk_line.intercept, detected_stalk.stalk_line.slope
+            # t = (Z - stalk_intercept.z) / stalk_slope.z
+            # static_transformStamped.transform.translation.x = stalk_intercept.x + stalk_slope.x * t
+            # static_transformStamped.transform.translation.y = stalk_intercept.y + stalk_slope.y * t
+            # static_transformStamped.transform.translation.z = Z
 
-            # #TF position
-            # static_transformStamped.transform.translation.x = detected_stalk_pose[0]  #z in openCV frame
-            # static_transformStamped.transform.translation.y = detected_stalk_pose[1] #x in openCV frame
-            # static_transformStamped.transform.translation.z = detected_stalk_pose[2] #y in openCV frame
+            # # #TF position
+            # # static_transformStamped.transform.translation.x = detected_stalk_pose[0]  #z in openCV frame
+            # # static_transformStamped.transform.translation.y = detected_stalk_pose[1] #x in openCV frame
+            # # static_transformStamped.transform.translation.z = detected_stalk_pose[2] #y in openCV frame
 
-            # static_transformStamped.transform.translation.x = detected_stalk_pose[2]  #z in openCV frame
-            # static_transformStamped.transform.translation.y = -detected_stalk_pose[0] #x in openCV frame
-            # static_transformStamped.transform.translation.z = -detected_stalk_pose[1] #y in openCV frame
+            # # static_transformStamped.transform.translation.x = detected_stalk_pose[2]  #z in openCV frame
+            # # static_transformStamped.transform.translation.y = -detected_stalk_pose[0] #x in openCV frame
+            # # static_transformStamped.transform.translation.z = -detected_stalk_pose[1] #y in openCV frame
 
 
-            #TF quaternion
-            static_transformStamped.transform.rotation.x = 0.0
-            static_transformStamped.transform.rotation.y = 0.0
-            static_transformStamped.transform.rotation.z = 0.0
-            static_transformStamped.transform.rotation.w = 1.0
+            # #TF quaternion
+            # static_transformStamped.transform.rotation.x = 0.0
+            # static_transformStamped.transform.rotation.y = 0.0
+            # static_transformStamped.transform.rotation.z = 0.0
+            # static_transformStamped.transform.rotation.w = 1.0
 
-            broadcaster.sendTransform(static_transformStamped)
+            # broadcaster.sendTransform(static_transformStamped)
 
             time.sleep(1)
             return "outcome1"
@@ -239,40 +238,40 @@ class REQ_DETECT(smach.State):
             tfBuffer = tf2_ros.Buffer()
             listener = tf2_ros.TransformListener(tfBuffer)
 
-            tf_lookup_done = False
+            # tf_lookup_done = False
 
-            while not tf_lookup_done:
-                try:
-                    trans = tfBuffer.lookup_transform('world', 'corn_cam', rospy.Time())
-                    tf_lookup_done = True
-                    print(f" ******** TF lookup done ******** ")
-                except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-                    # print(f" ******** TF lookup error ******** ")
-                    tf_lookup_done = False
+            # while not tf_lookup_done:
+            #     try:
+            #         trans = tfBuffer.lookup_transform('world', 'corn_cam', rospy.Time())
+            #         tf_lookup_done = True
+            #         print(f" ******** TF lookup done ******** ")
+            #     except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+            #         # print(f" ******** TF lookup error ******** ")
+            #         tf_lookup_done = False
 
-            print(f" TF transformation trans x: {trans.transform.translation.x}, y: {trans.transform.translation.y}, z: {trans.transform.translation.z}")
+            # print(f" TF transformation trans x: {trans.transform.translation.x}, y: {trans.transform.translation.y}, z: {trans.transform.translation.z}")
 
-            #publish TF for world to corn_cam
-            broadcaster = tf2_ros.StaticTransformBroadcaster()
-            static_transformStamped = geometry_msgs.msg.TransformStamped()
+            # #publish TF for world to corn_cam
+            # broadcaster = tf2_ros.StaticTransformBroadcaster()
+            # static_transformStamped = geometry_msgs.msg.TransformStamped()
 
-            #TF header
-            static_transformStamped.header.stamp = rospy.Time.now()
-            static_transformStamped.header.frame_id = "world"
-            static_transformStamped.child_frame_id = "corn"
-            #TF position
-            static_transformStamped.transform.translation.x = trans.transform.translation.x
-            static_transformStamped.transform.translation.y = trans.transform.translation.y
-            static_transformStamped.transform.translation.z = trans.transform.translation.z
+            # #TF header
+            # static_transformStamped.header.stamp = rospy.Time.now()
+            # static_transformStamped.header.frame_id = "world"
+            # static_transformStamped.child_frame_id = "corn"
+            # #TF position
+            # static_transformStamped.transform.translation.x = trans.transform.translation.x
+            # static_transformStamped.transform.translation.y = trans.transform.translation.y
+            # static_transformStamped.transform.translation.z = trans.transform.translation.z
 
   
-            #TF quaternion
-            static_transformStamped.transform.rotation.x = 0.0
-            static_transformStamped.transform.rotation.y = 0.0
-            static_transformStamped.transform.rotation.z = 0.0
-            static_transformStamped.transform.rotation.w = 1.0
+            # #TF quaternion
+            # static_transformStamped.transform.rotation.x = 0.0
+            # static_transformStamped.transform.rotation.y = 0.0
+            # static_transformStamped.transform.rotation.z = 0.0
+            # static_transformStamped.transform.rotation.w = 1.0
 
-            broadcaster.sendTransform(static_transformStamped)
+            # broadcaster.sendTransform(static_transformStamped)
 
             time.sleep(1)
             return 'outcome2'
@@ -301,19 +300,24 @@ class GO2_CORN_XY(smach.State):
 
         tf_lookup_done = False
 
-        while not tf_lookup_done:
-            try:
-                trans = tfBuffer.lookup_transform('gripper', 'corn', rospy.Time())
-                tf_lookup_done = True
-                # print(f" ******** TF lookup done ******** ")
-            except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-                # print(f" ******** TF lookup error ******** ")
-                tf_lookup_done = False
+        # while not tf_lookup_done:
+        #     try:
+        #         trans = tfBuffer.lookup_transform('gripper', 'corn', rospy.Time())
+        #         tf_lookup_done = True
+        #         # print(f" ******** TF lookup done ******** ")
+        #     except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+        #         # print(f" ******** TF lookup error ******** ")
+        #         tf_lookup_done = False
 
-        print(f" need to translate : {trans.transform.translation}")
-        x = trans.transform.translation.x
-        y = trans.transform.translation.y
-        z = trans.transform.translation.z
+        # print(f" need to translate : {trans.transform.translation}")
+        # x = trans.transform.translation.x
+        # y = trans.transform.translation.y
+        # z = trans.transform.translation.z
+
+        x = -0.03628206015960567
+        y = -0.1458352749289401
+
+        z = -0.0941743369126926
 
         # reject spurious cam pose by thresholding Y
         if y > -0.10 or y < -0.75:
@@ -361,7 +365,7 @@ class GO2_CORN_XY(smach.State):
 
 
             #3. move to corn position using the trans value
-            xArm_instance.go_to_stalk_pose(x_mm,y_mm,z_mm)
+            xArm_instance.go_to_stalk_pose_XY(x_mm,y_mm,z_mm)
             time.sleep(1)
             return "outcome1"
 
@@ -421,7 +425,7 @@ class GO2_CORN_Z(smach.State):
 
                 print(f"************ Collision detected ************")
 
-                xArm_instance.stop_velocity_control()
+                xArm_instance.stop_velocity_control_z()
                 collision_flag = True
                 print(f" collision_flag is now turned on: {collision_flag}")
 
@@ -435,6 +439,15 @@ class GO2_CORN_XY_NEW(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=["outcome1", "outcome2" ])
 
+        rospy.Subscriber('/audio4', AudioData, self.process_audio_data)
+        self.audio_input = np.array([])  # Initialize an empty array
+        # Sampling rate
+        sampling_rate = 44100
+        # Sample input in seconds
+        input_length = 0.01
+        self.sample_size_input = int(input_length * sampling_rate)
+
+
     def execute(self, userdata):
         rospy.loginfo("Executing state GO2_CORN_XY_NEW")
         plotter.highlight_only_input_node("GO2_CORN_XY_NEW")
@@ -446,6 +459,39 @@ class GO2_CORN_XY_NEW(smach.State):
 
         else:
             return "outcome2"
+
+    def process_audio_data(self, msg):
+        global collision_flag
+
+        audio_data_input = msg.data
+
+        # Convert list into np array
+        audio_data_input_np = np.asarray(audio_data_input).reshape((-1, 1))
+
+        # Concatenate audio data
+        self.audio_input = np.append(self.audio_input, audio_data_input_np)
+
+         # Polled enough to predict
+        if len(self.audio_input) > self.sample_size_input and collision_flag is False:
+
+            # print(f"Size of audio_input before predict: {len(self.audio_input)}")
+
+            #detect collision
+            # Check condition (amplitude)
+            # Get max amplitude of audio input
+            max_amplitude = np.amax(self.audio_input)
+
+            # Check max amplitude, break if max amplitude is greater than collision_threshold
+            if max_amplitude > collision_threshold:
+
+                print(f"************ Collision detected ************")
+
+                xArm_instance.stop_velocity_control_x()
+                collision_flag = True
+                print(f" collision_flag is now turned on: {collision_flag}")
+
+            self.audio_input = np.array([])  # Clear the array to start over
+
 
 class DONE(smach.State):
     global xArm_instance, plotter

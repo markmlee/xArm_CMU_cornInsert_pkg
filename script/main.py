@@ -20,7 +20,7 @@ from configparser import ConfigParser
 
 # custom helper library
 import xArm_Motion as xArm_Motion
-import fsm_audio as fsm_audio
+import fsm as fsm_audio
 
 """ 
 #######################################################
