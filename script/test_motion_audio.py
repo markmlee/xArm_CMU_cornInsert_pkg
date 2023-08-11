@@ -15,28 +15,44 @@ import xArm_Motion as xArm_Motion
 
 from configparser import ConfigParser
 
+##### TO RUN ####
+# 1. roscore
+# 2. python sounddevice_ros_publisher_node1.py -d [USB_device_ID]
+# 3. python test_motion_audio.py
+#################
 
-# Sampling rate
-sampling_rate = 44100
+
+
+# ==================================== params to modify ============================================
+
 # Sample input in seconds
 input_length = 0.01
-sample_size_input = int(input_length * sampling_rate)
 
-audio_input = np.array([])  # Initialize an empty array
-audio_input_history = np.array([])  # Initialize an empty array
-
+# Amplitude threshold for audio collision (range 0-1)
 collision_threshold = 0.01
-collision_count = 0
+
+# xArm velocity used before colliding (good range from 20-50 where unit is not specified) 
+velocity_speed = 20
+# ==================================================================================================
+
 
 arm = XArmAPI("192.168.1.213")
 arm.motion_enable(enable=True)
 arm.set_mode(0)
 arm.set_state(state=0)
 
+# Sampling rate
+sampling_rate = 44100
+
+sample_size_input = int(input_length * sampling_rate)
+
+audio_input = np.array([])  # Initialize an empty array
+audio_input_history = np.array([])  # Initialize an empty array
+
 collision_flag = False
 
 def process_audio_data(msg):
-    global audio_input, collision_count, audio_input_history, collision_flag
+    global audio_input, audio_input_history, collision_flag
     audio_data_input = msg.data
 
     # Convert list into np array
@@ -58,7 +74,7 @@ def process_audio_data(msg):
         # Check max amplitude, break if max amplitude is greater than collision_threshold
         if max_amplitude > collision_threshold:
 
-            print(f"************ Collision detected, count: {collision_count} ************")
+            print(f"************ Collision detected ************")
 
             arm.vc_set_cartesian_velocity([0, 0, 0, 0, 0, 0], is_radian = False, is_tool_coord=False, duration=3)
             collision_flag = True
@@ -72,8 +88,8 @@ def initialize_node():
     rospy.init_node('sounddevice_ros_subscriber_motion')
 
 def subscribe_to_audio_topic():
-    audio_info_msg = rospy.wait_for_message('/audio4_info', AudioInfo)
-    audio_sub = rospy.Subscriber('/audio4', AudioData, process_audio_data)
+    audio_info_msg = rospy.wait_for_message('/audio1_info', AudioInfo)
+    audio_sub = rospy.Subscriber('/audio1', AudioData, process_audio_data)
 
 def plot_audio_input():
     time = np.arange(0, len(audio_input_history)) / sampling_rate
@@ -89,21 +105,10 @@ def shutdown_handler(signal, frame):
     sys.exit(0)
 
 if __name__ == "__main__":
-    print("=============== Contact detection with audio ===============")
+
     initialize_node()
-
-     # create xArm Motion instance
-    # xArm_instance = xArm_Motion.xArm_Motion_Audio("192.168.1.213")
-    # xArm_instance.initialize_robot()
-    # xArm_instance.velocity_control()
-
-    
-
     subscribe_to_audio_topic()
     signal.signal(signal.SIGINT, shutdown_handler)
-
-
-    # =============== xArm Motion baked into this script b/c of ROS callback interrupt motion ===============
 
     print(f" ---- velocity control ----")
     # set cartesian velocity control mode
@@ -111,25 +116,19 @@ if __name__ == "__main__":
     arm.set_state(0)
 
 
-    for i in range(5):
+    # move forth for 5 seconds at fixed speed until collision detected
+    # ignore for loop - this was for previous motion of going back and forth 
+    for i in range(3):
 
         if collision_flag is False:
             print(f"iteration: {i}, collision_flag: {collision_flag}")
-            i = (i + 1) * 50
-            i = 20
+            
             #move arm down until hit ground
-            arm.vc_set_cartesian_velocity([0, 0, i, 0, 0, 0], is_radian = False, is_tool_coord=False, duration=5) #speed in xyz,rxryrz
+            arm.vc_set_cartesian_velocity([velocity_speed, 0, 0, 0, 0, 0], is_radian = False, is_tool_coord=False, duration=5) #speed in xyz,rxryrz
             rospy.sleep(5)
 
             if collision_flag is True:
                 break
         
-            # arm.vc_set_cartesian_velocity([0, 0, -i, 0, 0, 0], is_radian = False, is_tool_coord=False, duration=5) #speed in xyz,rxryrz
-            # rospy.sleep(5)
-    
+       
     print(f"done with velocity control")
-
-
-
-    
-    # rospy.spin()
